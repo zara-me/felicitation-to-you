@@ -2,7 +2,8 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CRITICAL: Viewport meta tag is essential for responsiveness -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>از ژن تا جان، عشق</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,68 +13,88 @@
             --primary-red: #ec4899; /* Pink-500 */
             --light-pink: #fbcfe8; /* Pink-200 */
         }
-        /* اعمال فونت اینتر (اگرچه برای فارسی به یک فونت مناسب RTL نیاز است، اما فعلاً Inter را حفظ می‌کنیم) */
+        
         body {
+            /* فونت Inter را حفظ می‌کنیم */
             font-family: 'Inter', sans-serif;
             background-color: #fce7f3; /* Pink-100 */
             min-height: 100vh;
-            /* Ensure alignment for the initial screen only */
+            overflow-x: hidden; /* جلوگیری از اسکرول افقی در هر حالت */
+            padding: 0; 
+        }
+
+        /* حالت پیش‌فرض برای صفحه اولیه: نمایش مرکز صفحه */
+        body:not(.challenge-mode) {
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Allow vertical scroll for the challenge screen */
-            overflow-x: hidden;
-            padding: 0; /* Reset body padding for responsiveness */
         }
+
         /* Custom styles for the running heart button */
         #running-heart-btn {
-            position: absolute;
-            transition: transform 0.4s ease-in-out; /* Smooth transition */
+            position: absolute; /* برای حرکت در فضای نسبی */
+            transition: transform 0.4s ease-in-out; 
             cursor: pointer;
             z-index: 10;
         }
 
         /* Custom styles for the slow-moving snail */
         @keyframes moveSnail {
-            /* در RTL حرکت از راست به چپ شروع می‌شود، اما انیمیشن ایموجی را حفظ می‌کنیم */
             0% { transform: translateX(-100%); }
-            100% { transform: translateX(calc(100% + 400px)); }
+            100% { transform: translateX(calc(100vw + 50px)); } /* 100vw to ensure it exits the viewport */
         }
 
         .snail-animation {
-            /* 30 seconds to cross the screen, infinite loop, back and forth */
             animation: moveSnail 30s linear infinite alternate;
-            position: absolute; /* Needed for animation keyframes */
+            position: absolute; 
+            white-space: nowrap; /* از شکستن ایموجی در انیمیشن جلوگیری می‌کند */
         }
 
         /* Styling for the main content card */
         .challenge-card {
             background-color: white;
-            padding: 2rem;
+            padding: 1.5rem; /* کاهش پدینگ برای موبایل */
             border-radius: 1.5rem;
-            box-shadow: 0 10px 25px rgba(236, 72, 153, 0.3); /* Pink shadow */
+            box-shadow: 0 10px 25px rgba(236, 72, 153, 0.3); 
             max-width: 900px;
-            width: 95%; /* Better mobile fit */
-            margin: 2rem auto;
-            align-self: flex-start; /* For when body is display: flex */
-        }
-
-        /* Lock icon styling */
-        .lock-icon {
-            font-size: 2rem;
+            width: 100%; /* استفاده از 100% و اتکا به padding/margin بادی */
+            margin: 0 auto; /* مرکز کردن در حالت دسکتاپ */
         }
 
         /* Responsive body adjustment when challenge screen is shown */
         body.challenge-mode {
             display: block;
-            padding: 1rem;
+            padding: 1rem 0.5rem; /* پدینگ کم برای موبایل */
+        }
+
+        /* Medium screens and up */
+        @media (min-width: 768px) {
+            body.challenge-mode {
+                padding: 2rem; /* افزایش پدینگ برای دسکتاپ */
+            }
+            .challenge-card {
+                padding: 2rem; /* پدینگ بیشتر برای کارت در دسکتاپ */
+            }
+        }
+        
+        /* Lock icon styling */
+        .lock-icon {
+            font-size: 2rem;
+        }
+
+        /* For the initial screen message */
+        #attempt-message {
+            text-align: center;
+            width: 90%;
+            margin: 0 auto;
         }
     </style>
 </head>
 <body>
 
     <!-- Initial Screen: The Running Heart -->
-    <div id="initialScreen" class="w-full h-screen flex justify-center items-center relative">
+    <!-- از flex-col و text-center برای چینش ریسپانسیو در وسط استفاده می‌کنیم -->
+    <div id="initialScreen" class="w-full h-screen flex flex-col justify-center items-center relative">
         <button id="running-heart-btn"
             class="p-6 rounded-full text-7xl bg-white shadow-xl hover:shadow-2xl active:scale-95 transition-all duration-300"
             onclick="handleInitialClick()">
@@ -85,148 +106,155 @@
     </div>
 
     <!-- Challenge Screen: The 4 Parts (Initially Hidden) -->
-    <div id="challengeScreen" class="hidden challenge-card text-right">
-        <h1 class="text-4xl font-bold text-center mb-10 text-pink-600">💖 از ژن تا جان، عشق💖</h1>
+    <!-- چالش اسکرین دیگر نیازی به کلاس hidden:flex/items-center ندارد و خودش را در مرکز قرار می‌دهد -->
+    <div id="challengeScreen" class="hidden text-right"> 
+        <div class="challenge-card">
+            <h1 class="text-3xl sm:text-4xl font-bold text-center mb-6 sm:mb-10 text-pink-600">💖 از ژن تا جان، عشق💖</h1>
 
-        <!-- Part 1: True Love Challenge -->
-        <div id="part1" class="border-b-2 border-pink-200 pb-8 mb-8">
-            <h2 class="text-3xl font-semibold mb-4 text-pink-700">۱. عشگ واگعی</h2>
-            <div id="part1-content">
-                <p class="text-lg mb-4 text-gray-700">
-                    سوال: "چند تا دوستت دارم اگه راست میگی؟ (بین ۰ تا ۱۰۰۰)"
-                </p>
-                <input type="number" id="love-count-input" placeholder="یک عدد وارد کنید..."
-                    class="p-3 border-2 border-pink-300 rounded-lg w-full md:w-1/3 focus:ring-pink-500 focus:border-pink-500 transition duration-150 text-left" dir="ltr">
-                <button onclick="checkPart1()"
-                    class="mt-4 md:mt-0 md:mr-4 bg-pink-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-md active:scale-95">
-                    بررسی پاسخ
-                </button>
-                <div class="mt-4 flex items-center">
-                    <span id="part1-lock" class="lock-icon">🔒</span>
-                    <span id="part1-status" class="mr-3 text-red-500 font-medium">قفل شده</span>
-                </div>
-            </div>
-
-            <!-- Success Content for Part 1 -->
-            <div id="part1-success" class="hidden mt-6 p-4 bg-green-100 border-r-4 border-green-500 rounded-lg text-right">
-                <div class="flex flex-col items-center space-y-4">
-                    <img src="images/2222.png"
-                         alt="Love Icon Placeholder"
-                         class="rounded-lg shadow-lg">
-                    <p class="text-xl font-bold text-green-700">قفل باز شد! 💕</p>
-                    <p class="text-lg text-center text-gray-800">
-                      یدونه دوست دارم یدونه دوست دارم، چون تو یگانه‌ترین و بی‌همتاترین نزیهه‌ای هستی که خداوند در بین ۱٠۱ تا نزیه به من و ما هدیه داده است.
+            <!-- Part 1: True Love Challenge -->
+            <div id="part1" class="border-b-2 border-pink-200 pb-6 mb-6">
+                <h2 class="text-2xl sm:text-3xl font-semibold mb-3 text-pink-700">۱. عشگ واگعی</h2>
+                <div id="part1-content">
+                    <p class="text-base sm:text-lg mb-4 text-gray-700">
+                        سوال: "چند تا دوستت دارم اگه راست میگی؟ (بین ۰ تا ۱۰۰۰)"
                     </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Part 2: Heart Challenge -->
-        <div id="part2" class="border-b-2 border-pink-200 pb-8 mb-8">
-            <h2 class="text-3xl font-semibold mb-4 text-pink-700">۲. چالش گلب</h2>
-            <div id="part2-content">
-                <p class="text-lg mb-4 text-gray-700">
-                    “به تعداد حروف "دوستت دارم" 💖”
-                </p>
-                <div class="flex items-center space-x-4">
-                    <button id="part2-heart-btn" onclick="handlePart2Click()"
-                        class="p-4 rounded-full text-4xl bg-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled>
-                        <span id="part2-icon">❌</span>
-                    </button>
-                    <p class="text-2xl font-bold text-gray-800">
-                        تعداد کلیک‌ها: <span id="part2-click-count" class="text-pink-600" dir="ltr">0</span>
-                    </p>
-                </div>
-                <div class="mt-4 flex items-center">
-                    <span id="part2-lock" class="lock-icon">🔒</span>
-                    <span id="part2-status" class="mr-3 text-red-500 font-medium">قفل شده (نیاز به موفقیت بخش ۱ دارد)</span>
-                </div>
-            </div>
-
-            <!-- Success Content for Part 2 -->
-            <div id="part2-success" class="hidden mt-6 p-4 bg-yellow-100 border-r-4 border-yellow-500 rounded-lg text-right">
-                <p class="text-xl font-bold text-yellow-700 mb-2">قفل باز شد!</p>
-                <p class="text-lg text-gray-800">
-                   همین الان 9 بار قلبم رو به تپش دراوردی اما نمیدونی 10 برابر بیشترشو هر روز موقع حرف زدن با هم انجام میدی که...😋🫀
-                </p>
-            </div>
-        </div>
-
-        <!-- Part 3: Wish Challenge -->
-        <div id="part3" class="border-b-2 border-pink-200 pb-8 mb-8">
-            <h2 class="text-3xl font-semibold mb-4 text-pink-700">۳. چالش آرزو</h2>
-
-            <form id="wish-form" onsubmit="handlePart3Submit(event)">
-                <p class="text-lg mb-4 text-gray-700">
-                    “آرزوی خودت رو اینجا بنویس ✨”
-                </p>
-                <textarea id="wish-input" rows="3" placeholder="آرزوی زیبای خود را وارد کنید..."
-                    class="p-3 border-2 border-pink-300 rounded-lg w-full focus:ring-pink-500 focus:border-pink-500 transition duration-150 mb-4" required
-                    disabled></textarea>
-
-                <button type="submit" id="wish-submit-btn"
-                    class="bg-pink-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled>
-                    ارسال آرزو
-                </button>
-                <div class="mt-4 flex items-center">
-                    <span id="part3-lock" class="lock-icon">🔒</span>
-                    <span id="part3-status" class="mr-3 text-red-500 font-medium">قفل شده (نیاز به موفقیت بخش ۲ دارد)</span>
-                </div>
-            </form>
-
-            <!-- Success Content for Part 3 (Snail Animation) -->
-            <div id="part3-success" class="hidden mt-6 p-4 bg-purple-100 border-r-4 border-purple-500 rounded-lg text-right">
-                <div class="flex flex-col space-y-6">
-                    <!-- Increased height for clearer animation -->
-                    <div class="w-full h-20 overflow-hidden relative">
-                        <!-- Snail Emoji with heart on shell moving -->
-                        <span class="text-4xl snail-animation">❤️🐢</span>
+                    <div class="flex flex-col md:flex-row items-stretch md:items-center">
+                        <input type="number" id="love-count-input" placeholder="یک عدد وارد کنید..."
+                            class="p-3 border-2 border-pink-300 rounded-lg w-full md:w-1/3 focus:ring-pink-500 focus:border-pink-500 transition duration-150 text-left mb-4 md:mb-0" dir="ltr">
+                        <button onclick="checkPart1()"
+                            class="bg-pink-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-md active:scale-95 w-full md:w-auto md:mr-4">
+                            بررسی پاسخ
+                        </button>
                     </div>
-                    <p class="text-xl text-center font-bold text-purple-700">
-                        آرزوی تو توسط سریع‌ترین پیک قلب‌ها در حال ارسال به کائنات است.
+                    <div class="mt-4 flex items-center">
+                        <span id="part1-lock" class="lock-icon">🔒</span>
+                        <span id="part1-status" class="mr-3 text-red-500 font-medium text-base sm:text-lg">قفل شده</span>
+                    </div>
+                </div>
+
+                <!-- Success Content for Part 1 -->
+                <div id="part1-success" class="hidden mt-6 p-4 bg-green-100 border-r-4 border-green-500 rounded-lg text-right">
+                    <div class="flex flex-col items-center space-y-4">
+                        <!-- استفاده از یک Placeholder URL ریسپانسیو -->
+                        <img src="https://placehold.co/400x300/a7f3d0/059669?text=Love"
+                            onerror="this.onerror=null;this.src='https://placehold.co/400x300/a7f3d0/059669?text=Love'" 
+                            alt="Love Icon Placeholder"
+                            class="w-full h-auto max-w-xs rounded-lg shadow-lg">
+                        <p class="text-xl font-bold text-green-700">قفل باز شد! 💕</p>
+                        <p class="text-base text-center text-gray-800">
+                            یدونه دوست دارم یدونه دوست دارم، چون تو یگانه‌ترین و بی‌همتاترین نزیهه‌ای هستی که خداوند در بین ۱٠۱ تا نزیه به من و ما هدیه داده است.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 2: Heart Challenge -->
+            <div id="part2" class="border-b-2 border-pink-200 pb-6 mb-6">
+                <h2 class="text-2xl sm:text-3xl font-semibold mb-3 text-pink-700">۲. چالش گلب</h2>
+                <div id="part2-content">
+                    <p class="text-base sm:text-lg mb-4 text-gray-700">
+                        “به تعداد حروف "دوستت دارم" 💖”
+                    </p>
+                    <div class="flex items-center space-x-4">
+                        <button id="part2-heart-btn" onclick="handlePart2Click()"
+                            class="p-4 rounded-full text-4xl bg-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            <span id="part2-icon">❌</span>
+                        </button>
+                        <p class="text-lg sm:text-2xl font-bold text-gray-800">
+                            تعداد کلیک‌ها: <span id="part2-click-count" class="text-pink-600" dir="ltr">0</span>
+                        </p>
+                    </div>
+                    <div class="mt-4 flex items-center">
+                        <span id="part2-lock" class="lock-icon">🔒</span>
+                        <span id="part2-status" class="mr-3 text-red-500 font-medium text-base sm:text-lg">قفل شده (نیاز به موفقیت بخش ۱ دارد)</span>
+                    </div>
+                </div>
+
+                <!-- Success Content for Part 2 -->
+                <div id="part2-success" class="hidden mt-6 p-4 bg-yellow-100 border-r-4 border-yellow-500 rounded-lg text-right">
+                    <p class="text-xl font-bold text-yellow-700 mb-2">قفل باز شد!</p>
+                    <p class="text-base text-gray-800">
+                        همین الان 9 بار قلبم رو به تپش دراوردی اما نمیدونی 10 برابر بیشترشو هر روز موقع حرف زدن با هم انجام میدی که...😋🫀
                     </p>
                 </div>
             </div>
-        </div>
 
-        <!-- Part 4: Birthday Cake Challenge (New Section) -->
-        <div id="part4" class="pt-8">
-            <h2 class="text-3xl font-semibold mb-4 text-pink-700">۴. تولدت مبارک، با تمام برگای پاییز و عطر چای</h2>
-            <div id="part4-content">
-                <p class="text-lg mb-4 text-gray-700">
-                    برای دیدن پیام، روی کیک کلیک کن! 🎂
-                </p>
-                <div class="flex items-center space-x-4">
-                    <button id="part4-cake-btn" onclick="handlePart4Click()"
-                        class="p-4 rounded-full text-4xl bg-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            <!-- Part 3: Wish Challenge -->
+            <div id="part3" class="border-b-2 border-pink-200 pb-6 mb-6">
+                <h2 class="text-2xl sm:text-3xl font-semibold mb-3 text-pink-700">۳. چالش آرزو</h2>
+
+                <form id="wish-form" onsubmit="handlePart3Submit(event)">
+                    <p class="text-base sm:text-lg mb-4 text-gray-700">
+                        “آرزوی خودت رو اینجا بنویس ✨”
+                    </p>
+                    <textarea id="wish-input" rows="3" placeholder="آرزوی زیبای خود را وارد کنید..."
+                        class="p-3 border-2 border-pink-300 rounded-lg w-full focus:ring-pink-500 focus:border-pink-500 transition duration-150 mb-4" required
+                        disabled></textarea>
+
+                    <button type="submit" id="wish-submit-btn"
+                        class="bg-pink-500 text-white font-bold py-3 px-6 rounded-xl hover:bg-pink-600 transition-all duration-200 shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
                         disabled>
-                        <span id="part4-icon">❌</span>
+                        ارسال آرزو
                     </button>
-                    <p class="text-xl font-bold text-gray-800">
-                        وضعیت: <span id="part4-state" class="text-red-500">قفل شده</span>
-                    </p>
-                </div>
-                <div class="mt-4 flex items-center">
-                    <span id="part4-lock" class="lock-icon">🔒</span>
-                    <span id="part4-status" class="mr-3 text-red-500 font-medium">قفل شده (نیاز به موفقیت بخش ۳ دارد)</span>
+                    <div class="mt-4 flex items-center">
+                        <span id="part3-lock" class="lock-icon">🔒</span>
+                        <span id="part3-status" class="mr-3 text-red-500 font-medium text-base sm:text-lg">قفل شده (نیاز به موفقیت بخش ۲ دارد)</span>
+                    </div>
+                </form>
+
+                <!-- Success Content for Part 3 (Snail Animation) -->
+                <div id="part3-success" class="hidden mt-6 p-4 bg-purple-100 border-r-4 border-purple-500 rounded-lg text-right">
+                    <div class="flex flex-col space-y-6">
+                        <div class="w-full h-20 overflow-hidden relative">
+                            <!-- Snail Emoji with heart on shell moving -->
+                            <span class="text-4xl snail-animation">❤️🐢</span>
+                        </div>
+                        <p class="text-base sm:text-xl text-center font-bold text-purple-700">
+                            آرزوی تو توسط سریع‌ترین پیک قلب‌ها در حال ارسال به کائنات است.
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Success Content for Part 4 (The Letter) -->
-            <div id="part4-success" class="hidden mt-6 p-6 bg-pink-100 border-r-4 border-pink-500 rounded-lg text-right">
-                <div class="flex flex-col items-center space-y-4">
-                    <h3 class="text-3xl font-bold text-pink-700 mb-4 text-center">چند کلمه برای بهترینم!</h3>
-                    <!-- Placeholder for 1111.png -->
-                    <img src="images/1111.png"
-                         alt="Placeholder for 1111.png"
-                         class="rounded-xl shadow-lg border-4 border-pink-300">
-
-                    <!-- Letter content will be injected here -->
-                    <p id="birthday-letter-content" class="text-base text-gray-800 whitespace-pre-line leading-relaxed text-right w-full">
-                        <!-- Content will be inserted by JS -->
+            <!-- Part 4: Birthday Cake Challenge (New Section) -->
+            <div id="part4" class="pt-6">
+                <h2 class="text-2xl sm:text-3xl font-semibold mb-3 text-pink-700">۴. تولدت مبارک، با تمام برگای پاییز و عطر چای</h2>
+                <div id="part4-content">
+                    <p class="text-base sm:text-lg mb-4 text-gray-700">
+                        برای دیدن پیام، روی کیک کلیک کن! 🎂
                     </p>
+                    <div class="flex items-center space-x-4">
+                        <button id="part4-cake-btn" onclick="handlePart4Click()"
+                            class="p-4 rounded-full text-4xl bg-white shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            <span id="part4-icon">❌</span>
+                        </button>
+                        <p class="text-lg font-bold text-gray-800">
+                            وضعیت: <span id="part4-state" class="text-red-500">قفل شده</span>
+                        </p>
+                    </div>
+                    <div class="mt-4 flex items-center">
+                        <span id="part4-lock" class="lock-icon">🔒</span>
+                        <span id="part4-status" class="mr-3 text-red-500 font-medium text-base sm:text-lg">قفل شده (نیاز به موفقیت بخش ۳ دارد)</span>
+                    </div>
+                </div>
+
+                <!-- Success Content for Part 4 (The Letter) -->
+                <div id="part4-success" class="hidden mt-6 p-6 bg-pink-100 border-r-4 border-pink-500 rounded-lg text-right">
+                    <div class="flex flex-col items-center space-y-4">
+                        <h3 class="text-2xl sm:text-3xl font-bold text-pink-700 mb-4 text-center">چند کلمه برای بهترینم!</h3>
+                        <!-- Placeholder for 1111.png -->
+                        <img src="https://placehold.co/400x300/fecaca/9d174d?text=Birthday+Note"
+                            onerror="this.onerror=null;this.src='https://placehold.co/400x300/fecaca/9d174d?text=Birthday+Note'"
+                            alt="Placeholder for 1111.png"
+                            class="w-full h-auto max-w-sm rounded-xl shadow-lg border-4 border-pink-300">
+
+                        <!-- Letter content will be injected here -->
+                        <p id="birthday-letter-content" class="text-base text-gray-800 whitespace-pre-line leading-relaxed text-right w-full p-2 border-t border-pink-300">
+                            <!-- Content will be inserted by JS -->
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -269,7 +297,7 @@
         const part3Status = document.getElementById('part3-status');
         const part3Success = document.getElementById('part3-success');
 
-        // Part 4 Elements (NEW)
+        // Part 4 Elements
         const part4CakeBtn = document.getElementById('part4-cake-btn');
         const part4Icon = document.getElementById('part4-icon');
         const part4State = document.getElementById('part4-state');
@@ -306,15 +334,18 @@
             const screenHeight = window.innerHeight;
             const btnSize = runningHeartBtn.offsetWidth;
 
-            // Generate random positions within the visible area
-            const newX = Math.random() * (screenWidth - btnSize * 1.5) + (btnSize * 0.25);
-            const newY = Math.random() * (screenHeight - btnSize * 1.5) + (btnSize * 0.25);
+            // Generate random positions within the visible area, with some padding from edges
+            const padding = btnSize * 0.5;
+            const newX = Math.random() * (screenWidth - btnSize - 2 * padding) + padding;
+            const newY = Math.random() * (screenHeight - btnSize - 2 * padding) + padding;
 
-            // Apply the new position using translation (better for performance)
-            // We use clientWidth/Height for offset from center
-            runningHeartBtn.style.transform = `translate(${newX - screenWidth / 2 + btnSize / 2}px, ${newY - screenHeight / 2 + btnSize / 2}px) scale(1)`;
+            // Calculate offset relative to the initial screen center (which is body center)
+            const centerX = screenWidth / 2;
+            const centerY = screenHeight / 2;
 
-            // Vague message, no click count revealed
+            // Apply the new position using translation
+            runningHeartBtn.style.transform = `translate(${newX - centerX}px, ${newY - centerY}px) scale(1)`;
+
             attemptMessage.textContent = `فرار می‌کنه! سعی کن قلب رو بگیری!`;
         }
 
@@ -323,20 +354,19 @@
                 attempts++;
                 moveHeart();
             } else {
-                // Heart is now clickable!
+                // Success click
                 runningHeartBtn.style.position = 'static'; // Reset position
-                runningHeartBtn.classList.add('hidden'); // Hide the heart
                 initialScreen.classList.add('hidden'); // Hide the initial screen
                 challengeScreen.classList.remove('hidden'); // Show the challenge screen
-                document.body.classList.remove('flex', 'justify-center', 'items-center');
-                document.body.classList.add('challenge-mode'); // Switch body to responsive mode
+                
+                // Switch body class for responsiveness and scrolling
+                document.body.classList.add('challenge-mode');
             }
         }
 
         // --- PART 1 LOGIC (Number 1) ---
 
         function checkPart1() {
-            // Use parseInt for number comparison, but keep input value as string to be safe
             const inputValue = parseInt(part1Input.value.trim(), 10);
 
             if (inputValue === TARGET_LOVE_COUNT) {
@@ -346,7 +376,8 @@
                 part1Status.classList.remove('text-red-500');
                 part1Status.classList.add('text-green-600');
                 part1Input.disabled = true;
-                part1Input.nextElementSibling.disabled = true; // Disable the button
+                // Use closest to find the button, since it's nextElementSibling in this specific HTML structure
+                part1Input.closest('.flex').querySelector('button').disabled = true; 
                 part1Input.classList.remove('border-pink-300');
                 part1Input.classList.add('border-green-500', 'bg-green-50');
                 part1Success.classList.remove('hidden');
@@ -358,7 +389,7 @@
             } else {
                 // Failure
                 showMessage('نچ!جواب یه چیز دیگست', 'error');
-                part1Input.value = ''; // Clear input for next attempt
+                part1Input.value = ''; 
             }
         }
 
@@ -368,7 +399,7 @@
             part2Lock.textContent = '🔓';
             part2Status.textContent = 'قفل را باز کن!';
             part2Status.classList.remove('text-red-500');
-            part2Status.classList.add('text-red-600');
+            part2Status.classList.add('text-pink-600');
         }
 
         // --- PART 2 LOGIC (9 Clicks) ---
@@ -386,8 +417,8 @@
                     part2Icon.textContent = '✅';
                     part2Lock.textContent = '🔓';
                     part2Status.textContent = 'تکمیل شد!';
-                    part2Status.classList.remove('text-green-500');
-                    part2Status.classList.add('text-green-500');
+                    part2Status.classList.remove('text-red-500', 'text-pink-600');
+                    part2Status.classList.add('text-green-600');
                     part2Success.classList.remove('hidden');
 
                     // Unlock Part 3
@@ -405,7 +436,7 @@
             part3Lock.textContent = '🔓';
             part3Status.textContent = 'قفل منتظر ارزوته!';
             part3Status.classList.remove('text-red-500');
-            part3Status.classList.add('text-red-500');
+            part3Status.classList.add('text-pink-600');
             wishInput.classList.add('bg-yellow-50');
         }
 
@@ -439,7 +470,7 @@
             part4Lock.textContent = '🔓';
             part4Status.textContent = 'اخرین قفلی که منتظره باز بشه!';
             part4Status.classList.remove('text-red-500');
-            part4Status.classList.add('text-green-600');
+            part4Status.classList.add('text-pink-600');
             part4State.textContent = 'آماده!';
             part4State.classList.remove('text-red-500');
             part4State.classList.add('text-green-600');
@@ -497,23 +528,21 @@
         // --- INITIALIZATION ---
 
         window.onload = () => {
-             // Initial random positioning for the running heart
-             moveHeart();
-             
-             // Inject letter content for Part 4
-             if (part4LetterContainer) {
-                 part4LetterContainer.textContent = birthdayLetter;
-             }
+            // Initial random positioning for the running heart
+            moveHeart();
+            
+            // Inject letter content for Part 4
+            if (part4LetterContainer) {
+                part4LetterContainer.textContent = birthdayLetter;
+            }
         };
 
         // Ensure the heart resets to an initial random position if screen size changes
         window.addEventListener('resize', () => {
-            if (!challengeScreen.classList.contains('hidden')) {
-                // If the challenge screen is showing, do nothing with the heart position
-                return;
+            if (initialScreen && !initialScreen.classList.contains('hidden')) {
+                // If the initial screen is showing, reposition the heart
+                moveHeart();
             }
-            // If the initial screen is showing, reposition the heart
-            moveHeart();
         });
 
     </script>
